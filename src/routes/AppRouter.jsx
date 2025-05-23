@@ -18,9 +18,9 @@ const AppRouter = () => (
       <Route path="/register" element={<RegisterForm />} />
       <Route path="/" element={<HomePage />} />
       <Route path="/forum" element={<ForumPage />}>
-        <Route index element={<Navigate to="post" replace />} />
-        <Route path="post" element={<Post />} />
-        <Route path="group" element={<Group />} />
+      <Route index element={<Navigate to="post" replace />} />
+      <Route path="post" element={<Post />} />
+      <Route path="group" element={<Group />} />
       </Route>
       <Route path="/message" element={<MessagePage />} />
       <Route
