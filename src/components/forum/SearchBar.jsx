@@ -1,36 +1,28 @@
-export default function SearchBar() {
+import React from 'react';
+
+export default function SearchBar({ search, setSearch }) {
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 my-12">
-      <div className="relative">
-        {/* Icon kính lúp */}
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <svg
-            className="w-5 h-5 text-blue-400"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </div>
-
-        <input
-          type="text"
-          placeholder="Tìm kiếm câu hỏi, chủ đề hoặc người dùng..."
-          className="w-full pl-12 pr-24 py-4 rounded-lg border border-gray-300 bg-white shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          aria-label="Search"
+    <div className="relative w-full">
+      {/* Icon kính lúp */}
+      <svg
+        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1112 4.5a7.5 7.5 0 014.65 12.15z"
         />
+      </svg>
 
-        <button
-          type="submit"
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
-        >
-          Tìm
-        </button>
-      </div>
+      <input
+        type="text"
+        placeholder="Tìm bài viết, chủ đề..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="border border-gray-300 rounded-md px-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+      />
     </div>
   );
 }
