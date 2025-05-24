@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import ChatBox from './ChatBox';
 
 export default function FriendSearch() {
-  const [tab, setTab] = useState("search"); // search | requests | friends
+  const [tab, setTab] = useState("search");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [incomingRequests, setIncomingRequests] = useState([]);
@@ -11,6 +11,9 @@ export default function FriendSearch() {
   const [loading, setLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [selectedFriend, setSelectedFriend] = useState(null);
+  const [incomingCount, setIncomingCount] = useState(0);
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const [totalUnread, setTotalUnread] = useState(0);
 
   useEffect(() => {
     const fetchCurrentUserId = async () => {
@@ -27,21 +30,56 @@ export default function FriendSearch() {
     fetchCurrentUserId();
   }, []);
 
-  useEffect(() => {
-    if (!currentUserId) return;
-
-    if (tab === "search") {
-      if (query.trim()) handleSearch();
-      else setResults([]);
-    } else if (tab === "requests") {
-      fetchIncomingRequests();
-    } else if (tab === "friends") {
-      fetchFriendList();
+  const fetchIncomingCount = useCallback(async () => {
+    try {
+      const res = await axios.get(`http://localhost:3009/api/friend/incoming-count/${currentUserId}`);
+      setIncomingCount(res.data.count);
+    } catch (err) {
+      console.error("Lỗi lấy số lượng lời mời:", err);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, tab, currentUserId]);
+  }, [currentUserId]);
 
-  const handleSearch = async () => {
+  const fetchUnreadCounts = useCallback(async () => {
+    try {
+      const res = await axios.get(`http://localhost:3009/api/messages/unread/${currentUserId}`);
+      const countMap = {};
+      res.data.forEach((item) => {
+        countMap[item.sender_id] = item.unread_count;
+      });
+      setUnreadCounts(countMap);
+    } catch (err) {
+      console.error("Lỗi lấy số tin nhắn chưa đọc:", err);
+    }
+  }, [currentUserId]);
+
+  const fetchTotalUnread = useCallback(async () => {
+    try {
+      const res = await axios.get(`http://localhost:3009/api/messages/unread/total/${currentUserId}`);
+      setTotalUnread(res.data.totalUnread);
+    } catch (err) {
+      console.error("Lỗi lấy tổng tin nhắn chưa đọc:", err);
+    }
+  }, [currentUserId]);
+
+  const fetchFriendList = useCallback(async () => {
+    try {
+      const res = await axios.get(`http://localhost:3009/api/friend/list/${currentUserId}`);
+      setFriendList(res.data);
+    } catch (err) {
+      console.error("Lỗi lấy danh sách bạn:", err);
+    }
+  }, [currentUserId]);
+
+  const fetchIncomingRequests = useCallback(async () => {
+    try {
+      const res = await axios.get(`http://localhost:3009/api/friend/incoming/${currentUserId}`);
+      setIncomingRequests(res.data);
+    } catch (err) {
+      console.error("Lỗi lấy lời mời đến:", err);
+    }
+  }, [currentUserId]);
+
+  const handleSearch = useCallback(async () => {
     try {
       setLoading(true);
       const res = await axios.get("http://localhost:3009/api/friend/search", {
@@ -53,7 +91,7 @@ export default function FriendSearch() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [query, currentUserId]);
 
   const sendFriendRequest = async (receiverId) => {
     try {
@@ -67,15 +105,6 @@ export default function FriendSearch() {
     }
   };
 
-  const fetchIncomingRequests = async () => {
-    try {
-      const res = await axios.get(`http://localhost:3009/api/friend/incoming/${currentUserId}`);
-      setIncomingRequests(res.data);
-    } catch (err) {
-      console.error("Lỗi lấy lời mời đến:", err);
-    }
-  };
-
   const respondToRequest = async (requestId, status) => {
     try {
       await axios.post(`http://localhost:3009/api/friend/respond`, {
@@ -83,30 +112,51 @@ export default function FriendSearch() {
         status,
       });
       fetchIncomingRequests();
+      fetchIncomingCount();
     } catch (err) {
       console.error("Lỗi phản hồi:", err);
     }
   };
 
-  const fetchFriendList = async () => {
-    try {
-      const res = await axios.get(`http://localhost:3009/api/friend/list/${currentUserId}`);
-      setFriendList(res.data);
-    } catch (err) {
-      console.error("Lỗi lấy danh sách bạn:", err);
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    if (tab === "search") {
+      if (query.trim()) handleSearch();
+      else setResults([]);
+    } else if (tab === "requests") {
+      fetchIncomingRequests();
+    } else if (tab === "friends") {
+      fetchFriendList();
+      fetchUnreadCounts();
+      fetchTotalUnread();
     }
-  };
+  }, [
+    query,
+    tab,
+    currentUserId,
+    handleSearch,
+    fetchFriendList,
+    fetchIncomingRequests,
+    fetchUnreadCounts,
+    fetchTotalUnread,
+  ]);
+
+  useEffect(() => {
+    if (currentUserId) {
+      fetchIncomingCount();
+      fetchTotalUnread();
+    }
+  }, [currentUserId, fetchIncomingCount, fetchTotalUnread]);
 
   return (
     <div className="flex min-h-screen bg-white text-black">
-      {/* Sidebar */}
       <div className="w-[350px] p-4 bg-gray-50 rounded-lg shadow-sm">
 
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <span role="img" aria-label="friend">🧑‍🤝‍🧑</span> Quản lý bạn bè
         </h2>
 
-        {/* Tabs */}
         <div className="flex flex-col gap-2">
           <button
             onClick={() => setTab("search")}
@@ -183,6 +233,11 @@ export default function FriendSearch() {
               }`}
           >
             🤝 Lời mời đến
+            {incomingCount > 0 && (
+              <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {incomingCount}
+              </span>
+            )}
           </button>
 
           {tab === "requests" && (
@@ -192,7 +247,6 @@ export default function FriendSearch() {
                   key={req.id}
                   className="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-green-50 transition"
                 >
-                  {/* Tên trên - avatar dưới */}
                   <div className="flex flex-col items-center gap-1 w-24">
                     <p className="font-medium text-center">{req.name}</p>
                     <img
@@ -218,19 +272,24 @@ export default function FriendSearch() {
                   </div>
                 </div>
               ))}
-
             </div>
           )}
 
           <button
             onClick={() => setTab("friends")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition font-medium ${tab === "friends"
-              ? "bg-purple-100 text-purple-700"
+              ? "bg-green-100 text-green-700"
               : "hover:bg-gray-100 text-gray-700"
               }`}
           >
-            👫 Danh sách bạn bè
+            📋 Danh sách bạn bè
+            {totalUnread > 0 && (
+              <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {totalUnread}
+              </span>
+            )}
           </button>
+
 
           {tab === "friends" && (
             <div className="mt-2 space-y-3">
@@ -240,33 +299,46 @@ export default function FriendSearch() {
                 friendList.map((friend) => (
                   <div
                     key={friend.id}
+                    className="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition min-h-[64px]"
                     onClick={() => setSelectedFriend(friend)}
-                    className={`flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-purple-100 transition cursor-pointer ${selectedFriend?.id === friend.id ? "bg-purple-200" : ""
-                      }`}
                   >
-
-                    <img
-                      src={friend.avt?.trim() ? friend.avt : "/default-avatar.png"}
-                      alt="avatar"
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div>
-                      <p className="font-medium">{friend.name}</p>
-                      <p className="text-sm text-gray-500">{friend.email}</p>
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={friend.avt?.trim() ? friend.avt : "/default-avatar.png"}
+                        alt="avatar"
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <div>
+                        <p className="font-medium">{friend.name}</p>
+                        <p className="text-sm text-gray-500">Bạn bè</p>
+                      </div>
                     </div>
+
+                    {unreadCounts[friend.id] > 0 && (
+                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        {unreadCounts[friend.id]}
+                      </span>
+                    )}
                   </div>
                 ))
               )}
+
             </div>
           )}
         </div>
       </div>
 
-      {/* Content right (tạm thời trống) */}
-      {/* Content right */}
       <div className="flex-1 bg-white p-6">
         {tab === "friends" && selectedFriend ? (
-          <ChatBox friend={selectedFriend} />
+          <ChatBox
+            friend={selectedFriend}
+            currentUserId={currentUserId}
+            onMarkedAsRead={() => {
+              fetchUnreadCounts();
+              fetchTotalUnread();
+            }}
+          />
+
         ) : (
           <div className="text-gray-400 italic">
             {tab === "friends"
