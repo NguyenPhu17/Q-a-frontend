@@ -3,7 +3,6 @@ import SearchBar from '../../components/forum/SearchBar';
 import Filter from '../../components/forum/Filter';
 import CreatePost from '../../components/forum/CreatePost';
 import PostList from '../../components/forum/PostList';
-import GroupSuggestions from '../../components/forum/GroupSuggestions';
 
 const postsData = [
   {
@@ -66,35 +65,29 @@ export default function PostPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
-      {/* Top: Search & Buttons */}
-      <div className="max-w-7xl mx-auto px-6 pt-0 pb-2 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="col-span-2">
-          <SearchBar search={search} setSearch={setSearch} />
-        </div>
-        <div className="col-span-1">
-          <div className="flex gap-3 w-full">
+      <div className="sticky  top-[-35px] bg-gray-100 z-40">
+        <div className="max-w-4xl mx-auto px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-6 items-center">
+          <div className="sm:col-span-2">
+            <SearchBar search={search} setSearch={setSearch} />
+          </div>
+          <div className="sm:col-span-1 flex justify-end gap-3">
             <Filter onFilter={handleFilter} />
             <CreatePost onCreate={handleCreatePost} />
           </div>
         </div>
-      </div>
-
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="col-span-2 flex items-center my-2">
-          <hr className="flex-grow border-gray-300" />
-          <span className="mx-4 text-gray-500 font-semibold whitespace-nowrap">Danh sách bài viết</span>
-          <hr className="flex-grow border-gray-300" />
+        <div className="max-w-4xl mx-auto px-6 pb-2">
+          <div className="flex items-center">
+            <hr className="flex-grow border-gray-300" />
+            <span className="mx-4 text-gray-500 font-semibold whitespace-nowrap">
+              Danh sách bài viết
+            </span>
+            <hr className="flex-grow border-gray-300" />
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-3 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-5 max-h-[600px] overflow-y-auto hide-scrollbar postlist-scroll-area">
-          <PostList posts={filteredPosts} />
-        </div>
-        <div className="lg:col-span-1">
-          <GroupSuggestions />
-        </div>
+      <div className="max-w-4xl mx-auto px-6 pb-6 mt-4">
+        <PostList posts={filteredPosts} />
       </div>
     </div>
   );
