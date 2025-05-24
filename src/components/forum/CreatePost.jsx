@@ -1,12 +1,17 @@
 import React from 'react';
+import { Button } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 
 export default function CreatePost({ onCreate }) {
   return (
-    <button
-      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+    <Button
+      type="primary"
+      block
+      icon={<PlusOutlined />}
       onClick={onCreate}
+      className="!bg-indigo-600 !text-white !border-indigo-700 hover:!bg-indigo-700 hover:!shadow-lg transition duration-300 transform hover:-translate-y-1 rounded-xl py-4 font-semibold shadow-md border"
     >
-      + Bài viết
-    </button>
+      Thêm bài viết
+    </Button>
   );
 }

@@ -1,12 +1,16 @@
 import React from 'react';
+import { Button } from 'antd';
+import { FilterOutlined } from '@ant-design/icons';
 
 export default function Filter({ onFilter }) {
   return (
-    <button
-      className="flex-1 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+    <Button
+      block
+      icon={<FilterOutlined />}
       onClick={onFilter}
+      className="!bg-white !text-gray-800 !border-gray-300 hover:!bg-gray-200 hover:!shadow-lg transition duration-300 transform hover:-translate-y-1 rounded-xl py-4 font-semibold shadow-md border"
     >
       Lọc
-    </button>
+    </Button>
   );
 }

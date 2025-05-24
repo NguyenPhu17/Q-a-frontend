@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaThumbsUp, FaCommentDots } from 'react-icons/fa';
+import { FaThumbsUp, FaThumbsDown, FaCommentDots } from 'react-icons/fa';
 
 const questions = [
   {
@@ -7,7 +7,8 @@ const questions = [
     author: "Nguyễn Văn A",
     date: "2025-05-20",
     tags: ["#toanhoc", "#hoctap"],
-    votes: 25,
+    likes: 25,
+    dislikes: 5,        
     comments: 10,
   },
   {
@@ -15,7 +16,8 @@ const questions = [
     author: "Trần Thị B",
     date: "2025-05-19",
     tags: ["#ielts", "#tienganh"],
-    votes: 18,
+    likes: 18,
+    dislikes: 3,
     comments: 8,
   },
   {
@@ -23,7 +25,8 @@ const questions = [
     author: "Lê Văn C",
     date: "2025-05-18",
     tags: ["#vieclam", "#kinhnghiem"],
-    votes: 30,
+    likes: 30,
+    dislikes: 7,
     comments: 15,
   },
   {
@@ -31,12 +34,13 @@ const questions = [
     author: "Phạm Thị D",
     date: "2025-05-17",
     tags: ["#laptrinh", "#python"],
-    votes: 22,
+    likes: 22,
+    dislikes: 4,
     comments: 12,
   }
 ];
 
-function QuestionCard({ title, author, date, tags, votes, comments }) {
+function QuestionCard({ title, author, date, tags, likes, dislikes, comments }) {
   return (
     <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col h-full">
       <h3 className="text-xl font-semibold text-blue-900 mb-4 line-clamp-3">
@@ -62,7 +66,11 @@ function QuestionCard({ title, author, date, tags, votes, comments }) {
       <div className="mt-auto flex items-center justify-start gap-6 text-indigo-600 font-semibold">
         <div className="flex items-center space-x-2">
           <FaThumbsUp />
-          <span>{votes}</span>
+          <span>{likes}</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <FaThumbsDown />
+          <span>{dislikes}</span>
         </div>
         <div className="flex items-center space-x-2">
           <FaCommentDots />
@@ -88,7 +96,8 @@ export default function FeaturedQuestions() {
               author={question.author}
               date={question.date}
               tags={question.tags}
-              votes={question.votes}
+              likes={question.likes}
+              dislikes={question.dislikes}
               comments={question.comments}
             />
           ))}

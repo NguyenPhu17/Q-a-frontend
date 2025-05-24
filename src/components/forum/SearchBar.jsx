@@ -3,7 +3,6 @@ import React from 'react';
 export default function SearchBar({ search, setSearch }) {
   return (
     <div className="relative w-full">
-      {/* Icon kính lúp */}
       <svg
         className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none"
         xmlns="http://www.w3.org/2000/svg"
@@ -21,7 +20,7 @@ export default function SearchBar({ search, setSearch }) {
         placeholder="Tìm bài viết, chủ đề..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="border border-gray-300 rounded-md px-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+        className="border border-gray-300 rounded-xl px-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
       />
     </div>
   );
