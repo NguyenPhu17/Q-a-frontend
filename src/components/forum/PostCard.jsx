@@ -1,12 +1,22 @@
-import React, { useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import Hashtags from "./Hashtags";
 
 const PostCard = ({ post }) => {
   const [expanded, setExpanded] = useState(false);
-  const limit = 120;
-  const isLong = post.content.length > limit;
-  const displayedContent = expanded
-    ? post.content
-    : post.content.slice(0, limit) + (isLong ? "..." : "");
+  const [clamped, setClamped] = useState(false);
+  const contentRef = useRef(null);
+
+  useEffect(() => {
+    const element = contentRef.current;
+    if (!element) return;
+
+    const lineHeight = parseFloat(getComputedStyle(element).lineHeight);
+    const maxHeight = 2 * lineHeight;
+
+    if (element.scrollHeight > maxHeight) {
+      setClamped(true);
+    }
+  }, [post.content]);
 
   return (
     <div className="bg-white rounded-md shadow-md p-5 mb-6 hover:shadow-lg transition-shadow duration-300">
@@ -26,20 +36,30 @@ const PostCard = ({ post }) => {
         {post.topic}
       </h3>
 
-
-      <p className="text-gray-700 text-base leading-relaxed mb-4">
-        {displayedContent}
-        {isLong && (
+      <div className="text-gray-700 text-base leading-relaxed mb-4">
+        <p
+          ref={contentRef}
+          className={
+            !expanded && clamped
+              ? "line-clamp-2 transition-all duration-300"
+              : "transition-all duration-300"
+          }
+        >
+          {post.content}
+        </p>
+        {clamped && (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="ml-2 text-blue-600 hover:underline focus:outline-none text-sm font-semibold"
+            className="mt-1 text-blue-600 hover:underline focus:outline-none text-sm font-semibold"
           >
             {expanded ? "Thu gọn" : "Xem thêm"}
           </button>
         )}
-      </p>
+      </div>
 
-      <div className="flex space-x-8 text-gray-600 text-sm">
+      <Hashtags tags={post.hashtags} />
+
+      <div className="flex space-x-8 text-gray-600 text-sm mt-4">
         <button className="hover:text-blue-600 transition flex items-center gap-1">
           👍 <span>{post.likes}</span>
         </button>
@@ -48,7 +68,6 @@ const PostCard = ({ post }) => {
         </button>
       </div>
     </div>
-
   );
 };
 

@@ -9,6 +9,7 @@ module.exports = {
       fontFamily: {
         'varela': ['"Varela Round"', 'sans-serif'],
       },
+      plugins: [require('@tailwindcss/line-clamp')],
     },
   },
   plugins: [],
