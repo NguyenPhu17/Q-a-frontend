@@ -5,7 +5,6 @@ export default function Footer() {
     <footer className="bg-blue-100 text-blue-800 py-12 border-t border-blue-200 font-varela">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {/* Giới thiệu */}
           <div>
             <h3 className="text-xl font-semibold mb-3">Diễn Đàn Sinh Viên</h3>
             <p className="text-sm leading-relaxed max-w-xs">
@@ -13,29 +12,27 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Liên kết nhanh */}
           <div>
             <h3 className="text-xl font-semibold mb-3">Liên kết nhanh</h3>
             <ul className="space-y-2 text-sm font-medium">
               <li>
-                <a href="/#" className="hover:text-blue-600 transition-colors duration-300">
+                <a href="/" className="hover:text-blue-600 transition-colors duration-300">
+                  Trang chủ
+                </a>
+              </li>
+              <li>
+                <a href="/forum" className="hover:text-blue-600 transition-colors duration-300">
                   Hỏi đáp
                 </a>
               </li>
               <li>
-                <a href="/#" className="hover:text-blue-600 transition-colors duration-300">
-                  Danh mục
-                </a>
-              </li>
-              <li>
-                <a href="/#" className="hover:text-blue-600 transition-colors duration-300">
-                  Liên hệ
+                <a href="/message" className="hover:text-blue-600 transition-colors duration-300">
+                  Tin nhắn
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Liên hệ + Mạng xã hội */}
           <div>
             <h3 className="text-xl font-semibold mb-3">Liên hệ</h3>
             <p className="text-sm mb-1">
@@ -51,7 +48,6 @@ export default function Footer() {
               </a>
             </p>
 
-            {/* Icon mạng xã hội */}
             <div className="flex space-x-4 mt-2 text-blue-600 text-2xl">
               <a
                 href="https://facebook.com"

@@ -10,6 +10,7 @@ export default function Header() {
   const [totalNotifications, setTotalNotifications] = useState(0);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [detailedUser, setDetailedUser] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -120,6 +121,7 @@ export default function Header() {
             <span className="text-xl font-semibold tracking-wide text-blue-700 select-none">UniTalk</span>
           </a>
 
+          {/* Desktop nav */}
           <nav className="hidden md:flex space-x-8 font-medium text-blue-600">
             <Link to="/" className={`relative group px-1 py-2 transition-colors duration-300 hover:text-blue-400 ${isHomeActive ? "text-blue-400" : ""}`}>
               Trang chủ
@@ -142,18 +144,37 @@ export default function Header() {
             </Link>
           </nav>
 
+          {/* Avatar + Logout + Auth */}
           <div className="flex items-center space-x-4">
+            {/* Hamburger menu on mobile */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-blue-600 hover:text-blue-400 focus:outline-none"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+
             {!user ? (
-              <>
+              <div className="hidden md:flex space-x-2">
                 <Link to="/login" className="px-5 py-2 rounded-full bg-blue-100 text-blue-700 font-semibold shadow-sm hover:bg-blue-200 transition duration-300">
                   Đăng nhập
                 </Link>
                 <Link to="/register" className="px-5 py-2 rounded-full bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 transition duration-300">
                   Đăng ký
                 </Link>
-              </>
+              </div>
             ) : (
-              <div className="flex items-center space-x-3">
+              <div className="hidden md:flex items-center space-x-3">
                 <div
                   className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500 cursor-pointer transition duration-300 hover:scale-105 hover:shadow-lg"
                   onClick={handleOpenProfileModal}
@@ -180,6 +201,50 @@ export default function Header() {
           </div>
         </div>
       </header>
+
+      {/* Mobile dropdown menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white shadow-lg px-6 py-4 space-y-4 text-blue-600 font-medium flex flex-col items-center">
+          <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className={`block ${isHomeActive ? "text-blue-400 font-semibold" : ""}`}>
+            Trang chủ
+          </Link>
+          <Link to="/forum" onClick={() => setIsMobileMenuOpen(false)} className={`block ${isForumActive ? "text-blue-400 font-semibold" : ""}`}>
+            Hỏi đáp
+          </Link>
+          <Link to="/message" onClick={() => setIsMobileMenuOpen(false)} className={`block relative ${isMessageActive ? "text-blue-400 font-semibold" : ""}`}>
+            Tin nhắn
+            {totalNotifications > 0 && (
+              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 animate-pulse">
+                {totalNotifications}
+              </span>
+            )}
+          </Link>
+
+          {!user ? (
+            <>
+              <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="block">
+                Đăng nhập
+              </Link>
+              <Link to="/register" onClick={() => setIsMobileMenuOpen(false)} className="block">
+                Đăng ký
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center space-x-3">
+                <img
+                  onClick={handleOpenProfileModal}
+                  src={user.avt || "/default-avatar.png"}
+                  alt="avatar"
+                  className="w-10 h-10 rounded-full border border-blue-500 cursor-pointer object-cover"
+                />
+                <span className="text-blue-700 font-semibold">Xin chào, <strong>{user.name}</strong></span>
+              </div>
+              <button onClick={handleLogout} className="text-red-600 font-semibold">Đăng xuất</button>
+            </>
+          )}
+        </div>
+      )}
 
       {showProfileModal && detailedUser && (
         <ProfileModal
