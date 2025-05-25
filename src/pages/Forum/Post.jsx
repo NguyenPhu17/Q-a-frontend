@@ -3,6 +3,7 @@ import SearchBar from '../../components/forum/SearchBar';
 import Filter from '../../components/forum/Filter';
 import CreatePost from '../../components/forum/CreatePost';
 import PostList from '../../components/forum/PostList';
+import PostForm from '../../components/forum/PostForm';
 
 const postsData = [
   {
@@ -15,7 +16,7 @@ const postsData = [
       'Chia sẻ các kỹ thuật giúp tăng tốc render trong React như React.memo, useCallback, useMemo và tránh re-render không cần thiết trong component.',
     hashtags: ['React', 'Performance', 'Hooks'],
     likes: 34,
-    dislikes: 4,        // <-- thêm dislikes
+    dislikes: 4,        
     comments: 12,
   },
   {
@@ -138,6 +139,7 @@ const postsData = [
 
 export default function PostPage() {
   const [search, setSearch] = useState('');
+  const [showForm, setShowForm] = useState(false);
 
   const filteredPosts = postsData.filter((post) => {
     const s = search.toLowerCase();
@@ -153,12 +155,17 @@ export default function PostPage() {
   };
 
   const handleCreatePost = () => {
-    alert('Chức năng tạo bài viết đang phát triển!');
+    setShowForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
-      <div className="sticky  top-[-35px] bg-gray-100 z-40">
+    <div className="min-h-screen bg-gray-100 font-sans relative">
+      {/* HEADER */}
+      <div className="sticky top-[-35px] bg-gray-100 z-40">
         <div className="max-w-4xl mx-auto px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-6 items-center">
           <div className="sm:col-span-2">
             <SearchBar search={search} setSearch={setSearch} />
@@ -179,9 +186,15 @@ export default function PostPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 pb-6 mt-4">
+      <div className={`max-w-4xl mx-auto px-6 pb-6 mt-4 transition-all duration-200 ${showForm ? 'blur-sm pointer-events-none' : ''}`}>
         <PostList posts={filteredPosts} />
       </div>
+
+      {showForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <PostForm onClose={handleCloseForm} />
+        </div>
+      )}
     </div>
   );
 }
