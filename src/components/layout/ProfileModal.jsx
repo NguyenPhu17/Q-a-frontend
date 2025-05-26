@@ -11,7 +11,7 @@ export default function ProfileModal({ detailedUser, setShowProfileModal, setUse
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [setIsUploading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const handleUpdateName = async () => {
         const token = localStorage.getItem("token");
@@ -117,8 +117,12 @@ export default function ProfileModal({ detailedUser, setShowProfileModal, setUse
 
             const result = await res.json();
             if (res.ok) {
-                setUser(result.data);
-                setDetailedUser(result.data);
+                const updatedUser = {
+                    ...detailedUser,
+                    avt: result.data.avt, 
+                };
+                setUser(updatedUser);
+                setDetailedUser(updatedUser);
                 toast.success("Cập nhật ảnh đại diện thành công!", { autoClose: 1000 });
             } else {
                 toast.error(result.message || "Upload thất bại", { autoClose: 1000 });
@@ -152,7 +156,7 @@ export default function ProfileModal({ detailedUser, setShowProfileModal, setUse
                         />
                         <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer text-xs hover:bg-blue-600">
                             ✎
-                            <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                            <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" disabled={isUploading} />
                         </label>
                     </div>
 
