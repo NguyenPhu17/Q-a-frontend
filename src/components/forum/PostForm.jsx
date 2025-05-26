@@ -7,10 +7,10 @@ import {
   useAutoList,
 } from '../../hooks/editorHooks';
 
-export default function PostForm({ onClose }) {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [hashtags, setHashtags] = useState('');
+export default function PostForm({ onClose, onSubmit, initialData }) {
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [content, setContent] = useState(initialData?.content || '');
+  const [hashtags, setHashtags] = useState(initialData?.hashtags || '');
 
   const textareaRef = useRef(null);
   const cursorPosRef = useRef(null);
@@ -73,7 +73,7 @@ export default function PostForm({ onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`Title: ${title}\nContent: ${content}\nHashtags: ${hashtags}`);
+    onSubmit({ title, content, hashtags });
   };
 
   return (

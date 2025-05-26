@@ -45,9 +45,11 @@ const LoginForm = () => {
       const user = profileData.data;
       const name = user?.name || '';
       const role = user?.role || '';
+      const userId = user?.id;
 
       localStorage.setItem('username', name);
       localStorage.setItem('role', role);
+      localStorage.setItem('userId', userId);
 
       toast.success('Đăng nhập thành công!');
       setTimeout(() => navigate('/'), 1500);
