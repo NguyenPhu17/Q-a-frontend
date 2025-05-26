@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import MarkdownPreview from './MarkdownPreview';
 import Toolbar from './Toolbar';
-import UploadSection from './UploadSection';
 import {
   useTextFormatting,
   useInsertList,
@@ -12,8 +11,6 @@ export default function PostForm({ onClose }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [hashtags, setHashtags] = useState('');
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const textareaRef = useRef(null);
   const cursorPosRef = useRef(null);
@@ -34,11 +31,45 @@ export default function PostForm({ onClose }) {
     content
   );
 
-  const handleImagesChange = (e) => setSelectedImages(prev => [...prev, ...Array.from(e.target.files)]);
-  const handleFilesChange = (e) => setSelectedFiles(prev => [...prev, ...Array.from(e.target.files)]);
+  const imageInputRef = useRef();
+  const fileInputRef = useRef();
 
-  const removeImage = (index) => setSelectedImages(prev => prev.filter((_, i) => i !== index));
-  const removeFile = (index) => setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  const handleImageUploadClick = () => imageInputRef.current.click();
+  const handleFileUploadClick = () => fileInputRef.current.click();
+
+  const handleUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('http://localhost:3009/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const contentType = res.headers.get('content-type');
+
+      if (!res.ok || !contentType?.includes('application/json')) {
+        const text = await res.text();
+        throw new Error(`Phản hồi không hợp lệ: ${text}`);
+      }
+
+      const data = await res.json();
+      const url = data.url;
+
+      const markdown =
+        type === 'image'
+          ? `![${file.name}](${url})`
+          : `\n[${file.name}](${url})\n`;
+
+      insertAtCursor(markdown, '', false);
+    } catch (err) {
+      console.error('❌ Lỗi upload:', err.message);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -74,23 +105,37 @@ export default function PostForm({ onClose }) {
 
         <div>
           <label className="block mb-1 font-medium" htmlFor="content">Nội dung <span className="text-red-500">*</span></label>
-          <Toolbar {...{ insertAtCursor, insertAlignAtCursor, insertListAtCursor }} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ minHeight: '125px' }}>
+          <Toolbar {...{ insertAtCursor, insertAlignAtCursor, insertListAtCursor, handleImageUploadClick, handleFileUploadClick }} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ minHeight: '200px' }}>
             <textarea
               id="content"
               ref={textareaRef}
               required
-              rows={6}
+              rows={10}
               value={content}
               onChange={handleContentChange}
               onKeyDown={handleContentKeyDown}
               className="w-full border border-gray-300 rounded-md px-3 py-2 resize-none overflow-y-auto focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
               placeholder="Viết nội dung bài viết bằng Markdown..."
-              style={{ minHeight: '125px' }}
+              style={{ minHeight: '200px' }}
             />
             <MarkdownPreview content={content} />
           </div>
         </div>
+
+        <input
+          type="file"
+          accept="image/*"
+          ref={imageInputRef}
+          onChange={(e) => handleUpload(e, 'image')}
+          className="hidden"
+        />
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={(e) => handleUpload(e, 'file')}
+          className="hidden"
+        />
 
         <div>
           <label className="block mb-3 font-medium" htmlFor="hashtags">Hashtags (cách nhau bằng dấu cách)</label>
@@ -103,15 +148,6 @@ export default function PostForm({ onClose }) {
             placeholder="#tag1 #tag2 #tag3"
           />
         </div>
-
-        <UploadSection
-          selectedImages={selectedImages}
-          selectedFiles={selectedFiles}
-          onImagesChange={handleImagesChange}
-          onFilesChange={handleFilesChange}
-          removeImage={removeImage}
-          removeFile={removeFile}
-        />
 
         <button
           type="submit"

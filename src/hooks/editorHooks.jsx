@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 export function useTextFormatting(textareaRef, setContent) {
-    const insertAtCursor = (before, after = '') => {
+    const insertAtCursor = (before, after = '', replaceSelection = true) => {
         const textarea = textareaRef.current;
         if (!textarea) return;
 
@@ -9,14 +9,24 @@ export function useTextFormatting(textareaRef, setContent) {
         const end = textarea.selectionEnd;
         const selected = textarea.value.substring(start, end);
 
-        const newText = before + selected + after;
-        const newValue = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+        let newText;
+        if (replaceSelection) {
+            newText = before + selected + after;
+        } else {
+            newText = before;
+        }
+
+        const newValue =
+            textarea.value.substring(0, start) +
+            newText +
+            textarea.value.substring(end);
+
         setContent(newValue);
 
         setTimeout(() => {
             textarea.focus();
-            if (selected.length === 0) {
-                textarea.selectionStart = textarea.selectionEnd = start + before.length;
+            if (!replaceSelection || selected.length === 0) {
+                textarea.selectionStart = textarea.selectionEnd = start + newText.length;
             } else {
                 textarea.selectionStart = start + before.length;
                 textarea.selectionEnd = start + before.length + selected.length;
