@@ -73,6 +73,12 @@ const LoginForm = () => {
         <LabelInputTop label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <LabelInputTop label="Mật khẩu" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
 
+        <div className="text-right">
+          <Link to="/forgot-password" className="text-sm text-royalblue hover:underline">
+            Quên mật khẩu?
+          </Link>
+        </div>
+
         <button type="submit" className="bg-royalblue hover:bg-blue-700 text-white py-2 rounded-lg text-lg">Đăng nhập</button>
 
         <p className="text-sm text-center text-gray-600">

@@ -10,12 +10,15 @@ import ManagePosts from '../pages/Admin/ManagePosts';
 import Post from '../pages/Forum/Post';
 import Group from '../pages/Forum/Group';
 import MessagePage from '../pages/Message/MessagePage';
+import ForgotPassword from '../pages/Form/ForgotPassword';
+import ResetPassword from '../pages/Admin/ResetPassword';
 
 const AppRouter = () => (
   <Router>
     <Routes>
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<RegisterForm />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/" element={<HomePage />} />
       <Route path="/forum" element={<ForumPage />}>
         <Route index element={<Navigate to="post" replace />} />
@@ -33,6 +36,7 @@ const AppRouter = () => (
       >
         <Route path="users" element={<ManageUsers />} />
         <Route path="posts" element={<ManagePosts />} />
+        <Route path="lock" element={<ResetPassword />} />
       </Route>
     </Routes>
   </Router>

@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Tag, Select, message, Spin,Popconfirm, Button  } from 'antd';
+import {
+  Table,
+  Tag,
+  Select,
+  message,
+  Spin,
+  Popconfirm,
+  Button,
+  Space,
+} from 'antd';
 import axios from 'axios';
 
 const { Option } = Select;
@@ -7,140 +16,167 @@ const { Option } = Select;
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [roleChangingUserId, setRoleChangingUserId] = useState(null);
-  const [deletingUserId, setDeletingUserId] = useState(null);
+  const [actionLoading, setActionLoading] = useState({
+    role: null,
+    delete: null,
+    lock: null,
+  });
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const res = await axios.get('http://localhost:3009/api/users');
       const userData = res?.data?.data;
-
-      if (!Array.isArray(userData)) {
-        throw new Error('Invalid data format');
-      }
-
+      if (!Array.isArray(userData)) throw new Error('Invalid user data');
       setUsers(userData);
     } catch (err) {
-      console.error('Fetch error:', err);
+      console.error(err);
       message.error('Không thể tải danh sách người dùng');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRoleChange = async (userId, newRole) => {
-  setRoleChangingUserId(userId);
-  try {
-    await axios.patch(`http://localhost:3009/api/users/${userId}/role`, { role: newRole });
-    message.success("Cập nhật vai trò thành công");
-    fetchUsers();
-  } catch (err) {
-    if (err.response?.status === 403) {
-      message.warning(err.response.data?.message || "Không được phép thay đổi vai trò");
-    } else if (err.response?.status === 400) {
-      message.error("Vai trò không hợp lệ");
-    } else {
-      message.error("Lỗi khi cập nhật vai trò");
-    }
-  } finally {
-    setRoleChangingUserId(null);
-  }
-};
-const handleDeleteUser = async (userId) => {
-    setDeletingUserId(userId);
-    try {
-      await axios.delete(`http://localhost:3009/api/users/${userId}`);
-      message.success("Xóa người dùng thành công");
-      fetchUsers();
-    } catch (err) {
-      message.error("Lỗi khi xóa người dùng");
-    } finally {
-      setDeletingUserId(null);
-    }
-  };
-
-
-
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const updateUser = (userId, updates) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, ...updates } : u))
+    );
+  };
+
+  const handleRoleChange = async (userId, role) => {
+    setActionLoading((prev) => ({ ...prev, role: userId }));
+    try {
+      await axios.patch(`http://localhost:3009/api/users/${userId}/role`, {
+        role,
+      });
+      message.success('Đã cập nhật vai trò');
+      updateUser(userId, { role });
+    } catch (err) {
+      const msg =
+        err.response?.data?.message || 'Lỗi khi thay đổi vai trò người dùng';
+      message.error(msg);
+    } finally {
+      setActionLoading((prev) => ({ ...prev, role: null }));
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    setActionLoading((prev) => ({ ...prev, delete: userId }));
+    try {
+      await axios.delete(`http://localhost:3009/api/users/${userId}`);
+      message.success('Đã xóa người dùng');
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+    } catch (err) {
+      message.error('Lỗi khi xóa người dùng');
+    } finally {
+      setActionLoading((prev) => ({ ...prev, delete: null }));
+    }
+  };
+
+  const handleLockToggle = async (userId, shouldLock) => {
+    setActionLoading((prev) => ({ ...prev, lock: userId }));
+    try {
+      const token = localStorage.getItem('token');
+      const endpoint = shouldLock ? 'lock-user' : 'unlock-user';
+      await axios.patch(
+        `http://localhost:3009/api/admin/${endpoint}`,
+        { userId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success(shouldLock ? 'Đã khóa tài khoản' : 'Đã mở khóa tài khoản');
+      updateUser(userId, { isLock: shouldLock });
+    } catch (err) {
+      const msg =
+        err.response?.data?.message || 'Lỗi khi thay đổi trạng thái tài khoản';
+      message.error(msg);
+    } finally {
+      setActionLoading((prev) => ({ ...prev, lock: null }));
+    }
+  };
 
   const columns = [
     {
       title: 'ID',
       dataIndex: 'id',
-      key: 'id',
     },
     {
       title: 'Tên',
       dataIndex: 'name',
-      key: 'name',
     },
     {
       title: 'Email',
       dataIndex: 'email',
-      key: 'email',
     },
-   {
-  title: 'Vai trò',
-  key: 'role',
-  render: (_, record) => {
-  const isAdmin = record.role === 'admin';
-
-  return (
-    <Select
-      value={record.role}
-      disabled={isAdmin}
-      loading={roleChangingUserId === record.id}
-      onChange={(value) => handleRoleChange(record.id, value)}
-      style={{ width: 140 }}
-    >
-      <Option value="student">Student</Option>
-      <Option value="lecturer">Lecturer</Option>
-    </Select>
-  );
-}
-
-},
-
+    {
+      title: 'Vai trò',
+      key: 'role',
+      render: (_, record) => (
+        <Select
+          value={record.role}
+          disabled={record.role === 'admin'}
+          style={{ width: 140 }}
+          loading={actionLoading.role === record.id}
+          onChange={(val) => handleRoleChange(record.id, val)}
+        >
+          <Option value="student">Student</Option>
+          <Option value="lecturer">Lecturer</Option>
+        </Select>
+      ),
+    },
     {
       title: 'Trạng thái',
-      dataIndex: 'is_active',
-      key: 'is_active',
-      render: (active) =>
-        active ? (
-          <Tag color="green">Đang hoạt động</Tag>
+      dataIndex: 'isLock',
+      render: (isLock) =>
+        isLock ? (
+          <Tag color="red">Đã khóa</Tag>
         ) : (
-          <Tag color="red">Vô hiệu</Tag>
+          <Tag color="green">Đang hoạt động</Tag>
         ),
     },
     {
-  title: 'Hành động',
-  key: 'action',
-  render: (_, record) => {
-    if (record.role === 'admin') {
-      return <span style={{ color: 'gray' }}>Không thể xóa admin</span>;
-    }
+      title: 'Hành động',
+      key: 'actions',
+      render: (_, record) => {
+        const isAdmin = record.role === 'admin';
+        const isLocked = record.isLock;
 
-    return (
-      <Popconfirm
-        title="Bạn có chắc muốn xóa người dùng này?"
-        onConfirm={() => handleDeleteUser(record.id)}
-        okText="Xóa"
-        cancelText="Hủy"
-      >
-        <Button
-          type="primary"
-          danger
-          loading={deletingUserId === record.id}
-        >
-          Xóa
-        </Button>
-      </Popconfirm>
-    );
-  },
-}
+        if (isAdmin) {
+          return <span style={{ color: 'gray' }}>Không thể thao tác</span>;
+        }
 
+        return (
+          <Space>
+            <Popconfirm
+              title="Bạn có chắc muốn xóa người dùng này?"
+              onConfirm={() => handleDeleteUser(record.id)}
+              okText="Xóa"
+              cancelText="Hủy"
+            >
+              <Button
+                danger
+                type="primary"
+                loading={actionLoading.delete === record.id}
+              >
+                Xóa
+              </Button>
+            </Popconfirm>
+
+            <Button
+              style={{ width: 90 }}
+              type={isLocked ? 'dashed' : 'default'}
+              loading={actionLoading.lock === record.id}
+              onClick={() => handleLockToggle(record.id, !isLocked)}
+            >
+              {isLocked ? 'Mở khóa' : 'Khóa'}
+            </Button>
+          </Space>
+        );
+      },
+    },
   ];
 
   return (
@@ -153,7 +189,7 @@ const handleDeleteUser = async (userId) => {
           dataSource={users}
           columns={columns}
           rowKey="id"
-          pagination={{ pageSize: 5 }}
+          pagination={{ pageSize: 6 }}
         />
       )}
     </div>
