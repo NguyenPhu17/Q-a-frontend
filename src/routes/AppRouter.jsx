@@ -9,6 +9,7 @@ import PrivateRouteAdmin from './PrivateRouteAdmin';
 import ManageUsers from '../pages/Admin/ManageUsers';
 import ManagePosts from '../pages/Admin/ManagePosts';
 import Post from '../pages/Forum/Post';
+import PostDetail from '../pages/Forum/PostDetail';
 import Group from '../pages/Forum/Group';
 import MessagePage from '../pages/Message/MessagePage';
 import ForgotPassword from '../pages/Form/ForgotPassword';
@@ -25,6 +26,7 @@ const AppRouter = () => (
       <Route path="/forum" element={<ForumPage />}>
         <Route index element={<Navigate to="post" replace />} />
         <Route path="post" element={<Post />} />
+        <Route path="post/:id" element={<PostDetail />} />
         <Route path="group" element={<Group />} />
       </Route>
       <Route path="/message" element={<MessagePage />} />
