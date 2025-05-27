@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FcGoogle } from 'react-icons/fc';
+import { FaFacebookF } from 'react-icons/fa';
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -65,6 +67,16 @@ const LoginForm = () => {
     }
   };
 
+  const handleSocialLogin = (provider) => {
+    toast.info(`Đang chuyển đến đăng nhập bằng ${provider}...`);
+
+    if (provider === 'google') {
+      window.location.href = 'http://localhost:3009/auth/google';
+    } else if (provider === 'facebook') {
+      window.location.href = 'http://localhost:3009/auth/facebook';
+    }
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md w-full bg-white p-6 rounded-2xl shadow-md">
@@ -90,6 +102,31 @@ const LoginForm = () => {
         <p className="text-sm text-center text-gray-600">
           Chưa có tài khoản? <Link to="/register" className="text-royalblue hover:underline">Đăng ký</Link>
         </p>
+
+        <div className="flex items-center gap-4 my-2">
+          <hr className="flex-grow border-gray-300" />
+          <span className="text-gray-400 text-sm">hoặc</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+        <div className="flex flex-col gap-2 mt-2">
+          <button
+            type="button"
+            onClick={() => handleSocialLogin('google')}
+            className="flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-100 text-black py-2 rounded-lg text-sm"
+          >
+            <FcGoogle className="w-5 h-5" />
+            Đăng nhập bằng Google
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSocialLogin('facebook')}
+            className="flex items-center justify-center gap-2 bg-[#3b5998] hover:bg-[#2d4373] text-white py-2 rounded-lg text-sm"
+          >
+            <FaFacebookF className="w-5 h-5 text-white" />
+            Đăng nhập bằng Facebook
+          </button>
+        </div>
       </form>
 
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
