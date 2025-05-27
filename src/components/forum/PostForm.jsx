@@ -144,7 +144,7 @@ export default function PostForm({ onClose, onSubmit, initialData }) {
             type="text"
             value={hashtags}
             onChange={(e) => setHashtags(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 leading-normal font-sans focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="#tag1 #tag2 #tag3"
           />
         </div>

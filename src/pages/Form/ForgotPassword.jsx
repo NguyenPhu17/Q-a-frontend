@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Mail } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
+
 export default function ResetPasswordForm() {
     const [email, setEmail] = useState("");
     const [message, setMessage] = useState("");
@@ -30,7 +31,10 @@ export default function ResetPasswordForm() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 px-4">
             <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-lg">
-                <h2 className="text-3xl font-bold text-center text-black mb-2">🔒 Quên Mật Khẩu</h2>
+                <h2 className="text-3xl font-bold text-center text-black mb-2 flex items-center justify-center gap-2">
+                    <Lock className="w-6 h-6 text-blue-600" />
+                    Quên Mật Khẩu
+                </h2>
                 <p className="text-gray-500 text-center mb-6 text-sm">
                     Nhập email của bạn để nhận liên kết đặt lại mật khẩu.
                 </p>
@@ -40,7 +44,7 @@ export default function ResetPasswordForm() {
                         <input
                             type="email"
                             placeholder="Email của bạn"
-                            className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-4 pl-11 border border-gray-300 rounded-lg text-base leading-normal focus:outline-none focus:ring-2 focus:ring-blue-500"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required

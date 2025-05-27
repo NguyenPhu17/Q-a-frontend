@@ -68,7 +68,13 @@ const LoginForm = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md w-full bg-white p-6 rounded-2xl shadow-md">
-        <h2 className="text-2xl font-semibold text-royalblue">Đăng nhập</h2>
+        <div className="relative">
+          <h2 className="text-[28px] text-royalblue font-semibold pl-7 relative">
+            Đăng nhập
+            <span className="absolute left-0 top-1 w-[16px] h-[16px] bg-royalblue rounded-full" />
+            <span className="absolute left-0 top-1 w-[16px] h-[16px] bg-royalblue rounded-full animate-ping" />
+          </h2>
+        </div>
 
         <LabelInputTop label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <LabelInputTop label="Mật khẩu" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
