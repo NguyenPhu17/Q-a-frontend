@@ -9,6 +9,7 @@ import ManageUsers from '../pages/Admin/ManageUsers';
 import ManagePosts from '../pages/Admin/ManagePosts';
 import Post from '../pages/Forum/Post';
 import Group from '../pages/Forum/Group';
+import GroupDetail from '../pages/Forum/GroupDetail';
 import MessagePage from '../pages/Message/MessagePage';
 
 const AppRouter = () => (
@@ -17,11 +18,16 @@ const AppRouter = () => (
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<RegisterForm />} />
       <Route path="/" element={<HomePage />} />
+      <Route path="/home" element={<HomePage />} />
+      
+      {/* Nested routes for forum */}
       <Route path="/forum" element={<ForumPage />}>
       <Route index element={<Navigate to="post" replace />} />
       <Route path="post" element={<Post />} />
       <Route path="group" element={<Group />} />
+      <Route path="group/:id" element={<GroupDetail />} />
       </Route>
+      
       <Route path="/message" element={<MessagePage />} />
       <Route
         path="/admin"

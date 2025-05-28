@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getAllGroups, createGroup } from '../../services/groupService';
 import { Modal } from 'antd'; // Nếu dùng Ant Design
 
@@ -37,7 +38,7 @@ const Group = () => {
   return (
     <div className="max-w-5xl mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Danh sách nhóm</h1>
+        <h1 className="text-2xl font-bold">Nhóm của bạn</h1>
         {userRole === 'lecturer' && (
           <button
             onClick={() => setIsModalOpen(true)}
@@ -50,11 +51,15 @@ const Group = () => {
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {groups.map((group) => (
-          <div key={group.id} className="border p-4 rounded shadow bg-white">
-            <h3 className="text-lg font-semibold">{group.name}</h3>
-            <p className="text-gray-600">{group.description}</p>
-          </div>
-        ))}
+            <Link
+              key={group.id}
+              to={`/forum/group/${group.id}`} // lưu ý đường dẫn này
+              className="border p-4 rounded shadow bg-white block hover:shadow-lg"
+            >
+              <h3 className="text-lg font-semibold">{group.name}</h3>
+              <p className="text-gray-600">{group.description}</p>
+            </Link>
+          ))}
       </div>
 
       {/* Modal tạo nhóm */}
