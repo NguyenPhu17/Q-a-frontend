@@ -11,7 +11,7 @@ const PostCard = ({ post }) => {
         className="cursor-pointer"
         onClick={() => navigate(`/forum/post/${post.id}`)}
       >
-        <PostContent post={post} showFullContent={false} />
+        <PostContent post={post} commentCount={post.comment_count} showFullContent={false} />
       </div>
     </div>
   );

@@ -117,6 +117,7 @@ export default function ProfileModal({ detailedUser, setShowProfileModal, setUse
 
             const result = await res.json();
             if (res.ok) {
+                localStorage.setItem('userAvatar', result.data.avt);
                 const updatedUser = {
                     ...detailedUser,
                     avt: result.data.avt, 

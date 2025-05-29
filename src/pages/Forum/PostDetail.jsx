@@ -4,20 +4,18 @@ import { toast } from 'react-toastify';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import PostContent from '../../components/forum/PostContent';
-import CommentForm from '../../components/forum/CommentForm';
-import CommentItem from '../../components/forum/CommentItem';
 import PostForm from '../../components/forum/PostForm';
+import CommentSection from '../../components/forum/CommentSection';
 
 export default function PostDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [post, setPost] = useState(null);
-    const [comments, setComments] = useState([]);
-    const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(false);
     const currentUserId = Number(localStorage.getItem('userId'));
     const errorToastShown = useRef(false);
+    const [commentCount, setCommentCount] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -30,13 +28,6 @@ export default function PostDetail() {
                 const postData = await postRes.json();
                 setPost(postData.data);
 
-                const commentRes = await fetch(`http://localhost:8000/api/post/${id}/comment`, {
-                    headers: {
-                        Authorization: 'Bearer ' + localStorage.getItem('token'),
-                    },
-                });
-                const commentData = await commentRes.json();
-                setComments(commentData.data || []);
             } catch (err) {
                 console.error('Lỗi khi tải bài viết hoặc bình luận:', err);
                 if (!errorToastShown.current) {
@@ -51,33 +42,11 @@ export default function PostDetail() {
         fetchData();
     }, [id]);
 
-    const handleSubmitComment = async (e) => {
-        e.preventDefault();
-        if (!newComment.trim()) return;
-
-        try {
-            const res = await fetch(`http://localhost:8000/api/post/${id}/comment`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: 'Bearer ' + localStorage.getItem('token'),
-                },
-                body: JSON.stringify({ content: newComment }),
-            });
-
-            const result = await res.json();
-            if (res.ok) {
-                setComments((prev) => [...prev, result.data]);
-                setNewComment('');
-                toast.success('Gửi bình luận thành công!', { autoClose: 1000 });
-            } else {
-                toast.error(result.message || 'Gửi bình luận thất bại', { autoClose: 1000 });
-            }
-        } catch (err) {
-            console.error('Lỗi gửi bình luận:', err);
-            toast.error('Lỗi gửi bình luận', { autoClose: 1000 });
+    useEffect(() => {
+        if (post?.comment_count !== undefined) {
+            setCommentCount(post.comment_count);
         }
-    };
+    }, [post]);
 
     const handleUpdate = async (formData) => {
         try {
@@ -216,6 +185,7 @@ export default function PostDetail() {
 
             <PostContent
                 post={post}
+                commentCount={commentCount}
                 showFullContent={true}
                 isOwner={isOwner}
                 onEdit={() => setEditing(true)}
@@ -236,23 +206,10 @@ export default function PostDetail() {
                 </div>
             )}
 
-            <div className="mt-8">
-                <h2 className="text-xl font-semibold mb-4">Bình luận ({comments.length})</h2>
-
-                <CommentForm
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    onSubmit={handleSubmitComment}
-                />
-
-                <div className="space-y-4 mt-4">
-                    {comments.length > 0 ? (
-                        comments.map((cmt) => <CommentItem key={cmt.id} comment={cmt} />)
-                    ) : (
-                        <p className="text-gray-500">Chưa có bình luận nào.</p>
-                    )}
-                </div>
-            </div>
+            <CommentSection
+                postId={post.id}
+                onCommentCountChange={setCommentCount}
+            />
         </div>
     );
 }

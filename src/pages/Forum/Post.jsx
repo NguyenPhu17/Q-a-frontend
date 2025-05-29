@@ -28,6 +28,15 @@ export default function PostPage() {
     fetchPosts();
   }, []);
 
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchPosts();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
   const handleCreatePost = async (formData) => {
     try {
       const tags = formData.hashtags ? formData.hashtags.trim().split(/\s+/) : [];

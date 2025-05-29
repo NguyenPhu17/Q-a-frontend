@@ -1,13 +1,13 @@
 import React, { useRef, useEffect, useState } from "react";
 import { AiFillLike, AiFillDislike } from "react-icons/ai";
 import { BiCommentDetail } from "react-icons/bi";
-import { FaEdit, FaTrash } from "react-icons/fa"; // import icon sửa và xoá
+import { FaEdit, FaTrash } from "react-icons/fa";
 import Hashtags from "./Hashtags";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 
-export default function PostContent({ post, showFullContent = true, isOwner, onEdit, onDelete }) {
+export default function PostContent({ post, showFullContent = true, isOwner, onEdit, onDelete, commentCount }) {
     const contentRef = useRef(null);
     const [expanded, setExpanded] = useState(showFullContent);
     const [clamped, setClamped] = useState(false);
@@ -30,8 +30,7 @@ export default function PostContent({ post, showFullContent = true, isOwner, onE
     }, [post.content, showFullContent]);
 
     return (
-        <div className="bg-white rounded-3xl shadow-md p-5 border mb-6 relative"> {/* thêm relative */}
-            {/* ICON SỬA & XOÁ góc trên bên phải */}
+        <div className="bg-white rounded-3xl shadow-md p-5 border mb-6 relative">
             {isOwner && (
                 <div className="absolute top-4 right-4 flex space-x-3">
                     <button
@@ -113,7 +112,7 @@ export default function PostContent({ post, showFullContent = true, isOwner, onE
                 </span>
                 <span className="flex items-center gap-1 text-green-600">
                     <BiCommentDetail size={20} />
-                    {post.comments ?? 0}
+                    {commentCount ?? post.comment_count ?? 0}
                 </span>
             </div>
         </div>

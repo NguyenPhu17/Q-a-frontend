@@ -48,10 +48,12 @@ const LoginForm = () => {
       const name = user?.name || '';
       const role = user?.role || '';
       const userId = user?.id;
+      const avt = user?.avt || '';
 
       localStorage.setItem('username', name);
       localStorage.setItem('role', role);
       localStorage.setItem('userId', userId);
+      localStorage.setItem('userAvatar', avt);
 
       toast.success('Đăng nhập thành công!');
       setTimeout(() => navigate('/'), 1500);
