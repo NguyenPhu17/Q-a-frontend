@@ -12,6 +12,17 @@ export default function PostContent({ post, showFullContent = true, isOwner, onE
     const [expanded, setExpanded] = useState(showFullContent);
     const [clamped, setClamped] = useState(false);
 
+    const getRelativeTime = (dateString) => {
+        const now = new Date();
+        const postDate = new Date(dateString);
+        const diff = (now - postDate) / 1000;
+
+        if (diff < 60) return 'Vừa xong';
+        if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+        return `${Math.floor(diff / 86400)} ngày trước`;
+    };
+
     useEffect(() => {
         if (!contentRef.current) return;
         const element = contentRef.current;
@@ -61,7 +72,7 @@ export default function PostContent({ post, showFullContent = true, isOwner, onE
                         {post.User?.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                        {new Date(post.created_at).toLocaleDateString("vi-VN")}
+                        {getRelativeTime(post.created_at)}
                     </p>
                 </div>
             </div>

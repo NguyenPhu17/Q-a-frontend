@@ -172,44 +172,58 @@ export default function PostDetail() {
         return <div className="text-center text-red-500 py-8">Không tìm thấy bài viết.</div>;
     }
 
-    const isOwner = currentUserId === post.user_id;
+    const isOwner = currentUserId === Number(post.user_id);
 
     return (
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-            <button
-                onClick={() => navigate(-1)}
-                className="mb-4 text-sm text-blue-600 hover:underline"
-            >
-                ← Quay lại
-            </button>
+        <div className="px-4 sm:px-6 py-8 -mt-12 max-w-4xl mx-auto">
+            <div className="-ml-32 mb-4">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition duration-200"
+                    style={{ transform: 'translateY(16px)' }}
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                    >
+                        <path
+                            fillRule="evenodd"
+                            d="M12.707 15.707a1 1 0 01-1.414 0L6.586 11H17a1 1 0 100-2H6.586l4.707-4.707a1 1 0 00-1.414-1.414l-6.414 6.414a1 1 0 000 1.414l6.414 6.414a1 1 0 001.414 0z"
+                            clipRule="evenodd"
+                        />
+                    </svg>
+                    <span>Quay lại</span>
+                </button>
+            </div>
 
-            <PostContent
-                post={post}
-                commentCount={commentCount}
-                showFullContent={true}
-                isOwner={isOwner}
-                onEdit={() => setEditing(true)}
-                onDelete={handleDelete}
-            />
+            <div className="max-w-3xl mx-auto -mt-10">
+                <PostContent
+                    post={post}
+                    commentCount={commentCount}
+                    showFullContent={true}
+                    isOwner={isOwner}
+                    onEdit={() => setEditing(true)}
+                    onDelete={handleDelete}
+                />
 
-            {editing && (
-                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-                    <PostForm
-                        initialData={{
-                            title: post.title,
-                            content: post.content,
-                            hashtags: post.tags?.map((tag) => tag.name).join(' ') || '',
-                        }}
-                        onClose={() => setEditing(false)}
-                        onSubmit={handleUpdate}
-                    />
-                </div>
-            )}
+                {editing && (
+                    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                        <PostForm
+                            initialData={{
+                                title: post.title,
+                                content: post.content,
+                                hashtags: post.tags?.map((tag) => tag.name).join(' ') || '',
+                            }}
+                            onClose={() => setEditing(false)}
+                            onSubmit={handleUpdate}
+                        />
+                    </div>
+                )}
 
-            <CommentSection
-                postId={post.id}
-                onCommentCountChange={setCommentCount}
-            />
+                <CommentSection postId={post.id} onCommentCountChange={setCommentCount}/>
+            </div>
         </div>
     );
 }

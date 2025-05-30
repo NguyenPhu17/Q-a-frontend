@@ -64,12 +64,56 @@ export default function CommentSection({ postId, onCommentCountChange, onComment
         setNewComment('');
     };
 
-    return (
-        <div className="mt-8 max-w-3xl mx-auto">
-            <h2 className="text-2xl font-semibold mb-6 border-b pb-2">
-                Bình luận ({comments.length})
-            </h2>
+    const handleEditComment = async (id, newContent) => {
+        try {
+            const res = await fetch(`http://localhost:8000/api/comment/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: 'Bearer ' + localStorage.getItem('token'),
+                },
+                body: JSON.stringify({ content: newContent }),
+            });
 
+            if (res.ok) {
+                setComments(prev =>
+                    prev.map(comment =>
+                        comment.id === id ? { ...comment, content: newContent } : comment
+                    )
+                );
+                toast.success('Sửa bình luận thành công', { autoClose: 1000 });
+            } else {
+                const data = await res.json();
+                toast.error(data.message || 'Không thể sửa bình luận', { autoClose: 1000 });
+            }
+        } catch (err) {
+            toast.error('Lỗi sửa bình luận', { autoClose: 1000 });
+        }
+    };
+
+    const handleDeleteComment = async (id) => {
+        try {
+            const res = await fetch(`http://localhost:8000/api/comment/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('token'),
+                },
+            });
+
+            if (res.ok) {
+                setComments(prev => prev.filter(comment => comment.id !== id));
+                toast.success('Xóa bình luận thành công', { autoClose: 1000 });
+            } else {
+                const data = await res.json();
+                toast.error(data.message || 'Không thể xóa bình luận', { autoClose: 1000 });
+            }
+        } catch (err) {
+            toast.error('Lỗi xóa bình luận', { autoClose: 1000 });
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-3xl shadow-md p-4 border space-y-4 -mt-5">
             <CommentForm
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
@@ -77,15 +121,26 @@ export default function CommentSection({ postId, onCommentCountChange, onComment
                 user={user}
             />
 
-            <div className="space-y-6 mt-6">
-                {comments.length > 0 ? (
-                    comments.map((cmt) => (
-                        <CommentItem key={cmt.id} comment={cmt} />
-                    ))
-                ) : (
-                    <p className="text-gray-500 italic text-center">Chưa có bình luận nào.</p>
-                )}
-            </div>
+            <hr className="border-gray-300" />
+
+            {comments.length > 0 ? (
+                [...comments]
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                    .map((cmt) => {
+                        const isOwner = Number(cmt.User?.id || cmt.user_id) === Number(user.id);
+                        return (
+                            <CommentItem
+                                key={cmt.id}
+                                comment={cmt}
+                                isOwner={isOwner}
+                                onEdit={handleEditComment}
+                                onDelete={handleDeleteComment}
+                            />
+                        );
+                    })
+            ) : (
+                <p className="text-gray-500 italic text-center">Chưa có bình luận nào.</p>
+            )}
         </div>
     );
 }
