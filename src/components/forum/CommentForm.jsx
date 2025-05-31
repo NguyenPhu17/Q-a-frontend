@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 
 export default function CommentForm({ value, onChange, onSubmit }) {
@@ -10,8 +11,17 @@ export default function CommentForm({ value, onChange, onSubmit }) {
             : baseUrl + userAvatarRaw
         : '';
 
+    const textareaRef = useRef(null);
+
+    const handleSubmit = async (e) => {
+        await onSubmit(e);
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+        }
+    };
+
     return (
-        <form onSubmit={onSubmit} className="flex items-start space-x-3 mb-4 ">
+        <form onSubmit={handleSubmit} className="flex items-start space-x-3 mb-4 ">
             {userAvatar ? (
                 <img
                     src={userAvatar}
@@ -24,6 +34,7 @@ export default function CommentForm({ value, onChange, onSubmit }) {
 
             <div className="flex-1 relative">
                 <textarea
+                    ref={textareaRef}
                     value={value}
                     onChange={onChange}
                     rows={1}

@@ -7,10 +7,28 @@ export default function CommentSection({ postId, onCommentCountChange, onComment
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const errorToastShown = useRef(false);
+    const [replyingTo, setReplyingTo] = useState(null);
 
     const user = React.useMemo(() => {
-        const userData = localStorage.getItem('user');
-        return userData ? JSON.parse(userData) : {};
+        return {
+            id: localStorage.getItem('userId'),
+            name: localStorage.getItem('username'),
+            role: localStorage.getItem('role'),
+            avt: localStorage.getItem('userAvatar'),
+        };
+    }, []);
+
+    const countTotalComments = useCallback((comments) => {
+        let count = 0;
+
+        for (const comment of comments) {
+            count += 1;
+            if (comment.Replies && comment.Replies.length > 0) {
+                count += countTotalComments(comment.Replies);
+            }
+        }
+
+        return count;
     }, []);
 
     const fetchComments = useCallback(async () => {
@@ -22,22 +40,22 @@ export default function CommentSection({ postId, onCommentCountChange, onComment
             });
             const data = await res.json();
             setComments(data.comments || []);
-            onCommentCountChange && onCommentCountChange(data.comments?.length || 0);
+            const total = countTotalComments(data.comments || []);
+            onCommentCountChange && onCommentCountChange(total);
         } catch (err) {
             if (!errorToastShown.current) {
                 toast.error('Lỗi khi tải bình luận', { autoClose: 1000 });
                 errorToastShown.current = true;
             }
         }
-    }, [postId, onCommentCountChange]);
+    }, [postId, onCommentCountChange, countTotalComments]);
 
     useEffect(() => {
         fetchComments();
     }, [fetchComments]);
 
-    const handleSubmitComment = async (e) => {
-        e.preventDefault();
-        if (!newComment.trim()) return;
+    const handleSubmitComment = async (content, parentId = null) => {
+        if (!content.trim()) return;
 
         try {
             const res = await fetch(`http://localhost:8000/api/comment`, {
@@ -46,22 +64,55 @@ export default function CommentSection({ postId, onCommentCountChange, onComment
                     'Content-Type': 'application/json',
                     Authorization: 'Bearer ' + localStorage.getItem('token'),
                 },
-                body: JSON.stringify({ post_id: postId, content: newComment }),
+                body: JSON.stringify({ post_id: postId, content, parent_id: parentId }),
             });
 
             const result = await res.json();
             if (res.ok) {
                 await fetchComments();
-                setNewComment('');
                 toast.success('Gửi bình luận thành công!', { autoClose: 1000 });
                 onCommentAdded && onCommentAdded();
+                setReplyingTo(null);
             } else {
                 toast.error(result.message || 'Gửi bình luận thất bại', { autoClose: 1000 });
             }
         } catch (err) {
             toast.error('Lỗi gửi bình luận', { autoClose: 1000 });
         }
-        setNewComment('');
+    };
+
+    const updateCommentInTree = (comments, id, newContent) => {
+        return comments.map(comment => {
+            if (comment.id === id) {
+                return { ...comment, content: newContent };
+            }
+            if (comment.Replies && comment.Replies.length > 0) {
+                return {
+                    ...comment,
+                    Replies: updateCommentInTree(comment.Replies, id, newContent),
+                };
+            }
+            return comment;
+        });
+    };
+
+    const deleteCommentInTree = (comments, idToDelete) => {
+        return comments
+            .map(comment => {
+                if (comment.id === idToDelete) {
+                    return null;
+                }
+
+                if (comment.Replies && comment.Replies.length > 0) {
+                    return {
+                        ...comment,
+                        Replies: deleteCommentInTree(comment.Replies, idToDelete),
+                    };
+                }
+
+                return comment;
+            })
+            .filter(Boolean);
     };
 
     const handleEditComment = async (id, newContent) => {
@@ -76,11 +127,7 @@ export default function CommentSection({ postId, onCommentCountChange, onComment
             });
 
             if (res.ok) {
-                setComments(prev =>
-                    prev.map(comment =>
-                        comment.id === id ? { ...comment, content: newContent } : comment
-                    )
-                );
+                setComments(prev => updateCommentInTree(prev, id, newContent));
                 toast.success('Sửa bình luận thành công', { autoClose: 1000 });
             } else {
                 const data = await res.json();
@@ -101,7 +148,12 @@ export default function CommentSection({ postId, onCommentCountChange, onComment
             });
 
             if (res.ok) {
-                setComments(prev => prev.filter(comment => comment.id !== id));
+                setComments(prev => {
+                    const updatedComments = deleteCommentInTree(prev, id);
+                    const total = countTotalComments(updatedComments);
+                    onCommentCountChange && onCommentCountChange(total);
+                    return updatedComments;
+                });
                 toast.success('Xóa bình luận thành công', { autoClose: 1000 });
             } else {
                 const data = await res.json();
@@ -117,7 +169,11 @@ export default function CommentSection({ postId, onCommentCountChange, onComment
             <CommentForm
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                onSubmit={handleSubmitComment}
+                onSubmit={async (e) => {
+                    e.preventDefault();
+                    await handleSubmitComment(newComment);
+                    setNewComment('');
+                }}
                 user={user}
             />
 
@@ -135,6 +191,9 @@ export default function CommentSection({ postId, onCommentCountChange, onComment
                                 isOwner={isOwner}
                                 onEdit={handleEditComment}
                                 onDelete={handleDeleteComment}
+                                onReply={(id) => setReplyingTo(id)}
+                                replyingTo={replyingTo}
+                                onSubmitReply={handleSubmitComment}
                             />
                         );
                     })
