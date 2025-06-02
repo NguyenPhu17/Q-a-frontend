@@ -1,138 +1,175 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Modal, Button, Table, Popconfirm, message } from 'antd';
-import axiosInstance from '../../services/axiosInstance';
+import {
+  getGroupById,
+  getAcceptedMembers,
+  getPendingMembers,
+  updateMemberStatus,
+  deleteMember,
+} from '../../services/groupService';
+
+import { getCurrentUser } from '../../services/authService'; // giả sử có hàm này để lấy người đăng nhập
 
 const GroupDetail = () => {
-  const { id } = useParams(); // groupId
-  const [groupName, setGroupName] = useState('');
+  const { id: groupId } = useParams();
+  const [groupInfo, setGroupInfo] = useState(null);
   const [acceptedMembers, setAcceptedMembers] = useState([]);
   const [pendingMembers, setPendingMembers] = useState([]);
-
   const [isAcceptedModalOpen, setAcceptedModalOpen] = useState(false);
   const [isPendingModalOpen, setPendingModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     fetchGroupInfo();
-  }, [id]);
+    fetchCurrentUser();
+  }, [groupId]);
+
+  useEffect(() => {
+  if (currentUser && groupInfo) {
+    console.log('currentUser.id:', currentUser.id);
+    console.log('groupInfo.owner.id:', groupInfo.owner?.id);
+    console.log('isOwner:', currentUser.id === groupInfo.owner?.id);
+  }
+}, [currentUser, groupInfo]);
 
   const fetchGroupInfo = async () => {
     try {
-      const res = await axiosInstance.get(`/group/${id}`);
-      setGroupName(res.data.name || 'Chi tiết nhóm');
+      const res = await getGroupById(groupId);
+      setGroupInfo(res.data);
     } catch (err) {
       console.error('Không thể lấy thông tin nhóm');
+      message.error('Lấy thông tin nhóm thất bại');
+    }
+  };
+
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await getCurrentUser();
+      console.log('Current user data:', res.data);
+      setCurrentUser(res.data.data);
+    } catch (err) {
+      console.error('Không thể lấy thông tin người dùng');
     }
   };
 
   const fetchAcceptedMembers = async () => {
     try {
-      const res = await axiosInstance.get(`/group_member/accepted_member/${id}`);
+      const res = await getAcceptedMembers(groupId);
       setAcceptedMembers(res.data || []);
     } catch (err) {
       console.error('Lỗi lấy thành viên đã duyệt:', err);
+      message.error('Lỗi lấy thành viên đã duyệt');
     }
   };
 
   const fetchPendingMembers = async () => {
-  try {
-    const res = await axiosInstance.get(`/group_member/pending_member/${id}`);
-    console.log('Pending data:', res.data); // <- Xem có fullName/email không
-    setPendingMembers(res.data || []);
-  } catch (err) {
-    console.error('Lỗi lấy thành viên chờ duyệt:', err);
-  }
-};
+    try {
+      const res = await getPendingMembers(groupId);
+      setPendingMembers(res.data || []);
+    } catch (err) {
+      console.error('Lỗi lấy thành viên chờ duyệt:', err);
+      message.error('Lỗi lấy thành viên chờ duyệt');
+    }
+  };
 
   const handleAccept = async (userId) => {
     try {
-      await axiosInstance.put(`/group_member/update_accepted/${id}`, {
-        userId,
-        status: 'accepted',
-      });
+      await updateMemberStatus(groupId, userId, 'accepted');
       message.success('Đã duyệt thành viên');
       fetchPendingMembers();
       fetchAcceptedMembers();
     } catch (err) {
-      message.error('Lỗi duyệt');
+      message.error('Lỗi duyệt thành viên');
     }
   };
 
   const handleReject = async (userId) => {
     try {
-      await axiosInstance.put(`/group_member/update_accepted/${id}`, {
-        userId,
-        status: 'rejected',
-      });
-      message.success('Đã từ chối');
+      await updateMemberStatus(groupId, userId, 'rejected');
+      message.success('Đã từ chối thành viên');
       fetchPendingMembers();
     } catch (err) {
-      message.error('Lỗi từ chối');
+      message.error('Lỗi từ chối thành viên');
     }
   };
 
-  const handleDelete = async (memberId) => {
+  const handleDelete = async (userId) => {
     try {
-      await axiosInstance.delete(`/group_member/delete_rejected/${memberId}`);
-      message.success('Đã xóa');
+      await deleteMember(groupId, userId);
+      message.success('Đã xóa thành viên');
       fetchAcceptedMembers();
     } catch (err) {
       message.error('Lỗi xóa thành viên');
     }
   };
 
-  const pendingColumns = [
-      {
-        title: 'Họ tên',
-        dataIndex: ['user', 'name'], // đúng theo key trong backend trả ra
-      },
-      {
-        title: 'Email',
-        dataIndex: ['user', 'email'],
-      },
-      {
-        title: 'Hành động',
-        render: (text, record) => (
-          <>
-            <Button onClick={() => handleAccept(record.user_id)} type="link">
-              Duyệt
-            </Button>
-            <Button onClick={() => handleReject(record.user_id)} type="link" danger>
-              Từ chối
-            </Button>
-          </>
-        ),
-      },
-    ];
+  const isOwner = currentUser && groupInfo && currentUser.id === groupInfo.owner?.id;
 
   const acceptedColumns = [
-      {
-        title: 'Họ tên',
-        dataIndex: ['user', 'name'], 
-      },
-      {
-        title: 'Email',
-        dataIndex: ['user', 'email'], 
-      },
-      {
-        title: 'Hành động',
-        render: (text, record) => (
-          <Popconfirm
-            title="Xóa thành viên này?"
-            onConfirm={() => handleDelete(record.user_id)}
-          >
-            <Button type="link" danger>
-              Xóa
-            </Button>
-          </Popconfirm>
-        ),
-      },
-    ];
+    {
+      title: 'STT',
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: 'Họ tên',
+      dataIndex: ['user', 'name'],
+    },
+    {
+      title: 'Email',
+      dataIndex: ['user', 'email'],
+    },
+  ];
+
+  if (isOwner) {
+    acceptedColumns.push({
+      title: 'Hành động',
+      render: (_, record) => (
+        <Popconfirm
+          title="Xóa thành viên này?"
+          onConfirm={() => handleDelete(record.user_id)}
+        >
+          <Button type="link" danger>
+            Xóa
+          </Button>
+        </Popconfirm>
+      ),
+    });
+  }
+
+  const pendingColumns = [
+    {
+      title: 'Họ tên',
+      dataIndex: ['user', 'name'],
+    },
+    {
+      title: 'Email',
+      dataIndex: ['user', 'email'],
+    },
+    {
+      title: 'Hành động',
+      render: (_, record) => (
+        <>
+          <Button onClick={() => handleAccept(record.user_id)} type="link">
+            Duyệt
+          </Button>
+          <Button onClick={() => handleReject(record.user_id)} type="link" danger>
+            Từ chối
+          </Button>
+        </>
+      ),
+    },
+  ];
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Chi tiết nhóm: {groupName}</h1>
-      <div className="space-x-4">
+      <h1 className="text-2xl font-bold mb-4">Chi tiết nhóm: {groupInfo?.name}</h1>
+      <p>Mô tả: {groupInfo?.description}</p>
+      <p>Người tạo: {groupInfo?.owner?.name} ({groupInfo?.owner?.email})</p>
+      <p>Số thành viên: {groupInfo?.member_count}</p>
+      <p>Ngày tạo: {new Date(groupInfo?.created_at).toLocaleDateString()}</p>
+
+      <div className="space-x-4 my-4">
         <Button
           onClick={() => {
             fetchAcceptedMembers();
@@ -141,18 +178,19 @@ const GroupDetail = () => {
         >
           Xem danh sách thành viên
         </Button>
-        <Button
-          onClick={() => {
-            fetchPendingMembers();
-            setPendingModalOpen(true);
-          }}
-          type="primary"
-        >
-          Xem yêu cầu tham gia
-        </Button>
+        {isOwner && (
+          <Button
+            onClick={() => {
+              fetchPendingMembers();
+              setPendingModalOpen(true);
+            }}
+            type="primary"
+          >
+            Xem yêu cầu tham gia
+          </Button>
+        )}
       </div>
 
-      {/* Modal thành viên đã duyệt */}
       <Modal
         title="Thành viên nhóm"
         open={isAcceptedModalOpen}
@@ -164,10 +202,10 @@ const GroupDetail = () => {
           dataSource={acceptedMembers}
           columns={acceptedColumns}
           rowKey="id"
+          pagination={false}
         />
       </Modal>
 
-      {/* Modal thành viên chờ duyệt */}
       <Modal
         title="Yêu cầu tham gia nhóm"
         open={isPendingModalOpen}
@@ -179,6 +217,7 @@ const GroupDetail = () => {
           dataSource={pendingMembers}
           columns={pendingColumns}
           rowKey="id"
+          pagination={false}
         />
       </Modal>
     </div>
