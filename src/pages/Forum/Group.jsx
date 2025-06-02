@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllGroups, createGroup } from '../../services/groupService';
-import { Modal } from 'antd'; // Nếu dùng Ant Design
+import { getAllGroups, getGroupsOfLecturer, createGroup } from '../../services/groupService';
+import { joinGroup } from '../../services/groupMemberService';
+import { Modal, message } from 'antd';
 
 const Group = () => {
   const [groups, setGroups] = useState([]);
@@ -15,14 +16,15 @@ const Group = () => {
   }, []);
 
   const fetchGroups = async () => {
-  try {
-    const res = await getAllGroups();
-    console.log('res.data:', res.data, '| typeof:', typeof res.data);
-    setGroups(res.data.data);
-  } catch (err) {
-    console.error('Lỗi khi lấy nhóm:', err);
-  }
-};
+    try {
+      const res = userRole === 'lecturer'
+        ? await getGroupsOfLecturer()
+        : await getAllGroups();
+      setGroups(res.data.data);
+    } catch (err) {
+      console.error('Lỗi khi lấy nhóm:', err);
+    }
+  };
 
   const handleSubmit = async () => {
     try {
@@ -35,10 +37,35 @@ const Group = () => {
     }
   };
 
+  const handleJoinGroup = async (groupId) => {
+  try {
+    await joinGroup(groupId);
+    message.success('Đã gửi yêu cầu tham gia nhóm');
+
+    // Cập nhật trạng thái trong danh sách nhóm
+    setGroups(prevGroups =>
+      prevGroups.map(group =>
+        group.id === groupId ? { ...group, hasRequested: true } : group
+      )
+    );
+  } catch (err) {
+    const msg = err.response?.data?.message;
+
+    if (msg === 'Ban da gui yeu cau hoac la thanh vien trong nhom') {
+      message.warning('Bạn đã gửi yêu cầu hoặc đã là thành viên của nhóm này.');
+    } else {
+      message.error('Gửi yêu cầu thất bại');
+    }
+
+    console.error('Lỗi khi tham gia nhóm:', err.response || err);
+  }
+};
+
+
   return (
     <div className="max-w-5xl mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Nhóm của bạn</h1>
+        <h1 className="text-2xl font-bold">Danh sách nhóm</h1>
         {userRole === 'lecturer' && (
           <button
             onClick={() => setIsModalOpen(true)}
@@ -51,15 +78,35 @@ const Group = () => {
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {groups.map((group) => (
-            <Link
-              key={group.id}
-              to={`/forum/group/${group.id}`} // lưu ý đường dẫn này
-              className="border p-4 rounded shadow bg-white block hover:shadow-lg"
-            >
-              <h3 className="text-lg font-semibold">{group.name}</h3>
-              <p className="text-gray-600">{group.description}</p>
-            </Link>
-          ))}
+          <div
+            key={group.id}
+            className="border p-4 rounded shadow bg-white hover:shadow-lg"
+          >
+            <h3 className="text-lg font-semibold">{group.name}</h3>
+            <p className="text-gray-600">{group.description}</p>
+
+            <div className="mt-2">
+              <Link
+                to={`/forum/group/${group.id}`}
+                className="text-blue-600 hover:underline mr-4"
+              >
+                Xem chi tiết
+              </Link>
+              {userRole === 'student' && (
+                group.hasRequested ? (
+                  <span className="text-gray-500">Đã gửi yêu cầu</span>
+                ) : (
+                  <button
+                    onClick={() => handleJoinGroup(group.id)}
+                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                  >
+                    Tham gia
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Modal tạo nhóm */}
