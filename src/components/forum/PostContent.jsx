@@ -1,13 +1,24 @@
 import React, { useRef, useEffect, useState } from "react";
-import { AiFillLike, AiFillDislike } from "react-icons/ai";
-import { BiCommentDetail } from "react-icons/bi";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Hashtags from "./Hashtags";
+import PostActions from "./PostActions";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 
-export default function PostContent({ post, showFullContent = true, isOwner, onEdit, onDelete, commentCount }) {
+export default function PostContent({
+    post,
+    showFullContent = true,
+    isOwner,
+    onEdit,
+    onDelete,
+    commentCount,
+    postLikes,
+    postDislikes,
+    onLike,
+    onDislike,
+    userVote,
+}) {
     const contentRef = useRef(null);
     const [expanded, setExpanded] = useState(showFullContent);
     const [clamped, setClamped] = useState(false);
@@ -17,7 +28,7 @@ export default function PostContent({ post, showFullContent = true, isOwner, onE
         const postDate = new Date(dateString);
         const diff = (now - postDate) / 1000;
 
-        if (diff < 60) return 'Vừa xong';
+        if (diff < 60) return "Vừa xong";
         if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
         if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
         return `${Math.floor(diff / 86400)} ngày trước`;
@@ -39,6 +50,16 @@ export default function PostContent({ post, showFullContent = true, isOwner, onE
             setClamped(true);
         }
     }, [post.content, showFullContent]);
+
+    const handleOnLike = () => {
+        console.log("PostContent: onLike called");
+        onLike?.();
+    };
+
+    const handleOnDislike = () => {
+        console.log("PostContent: onDislike called");
+        onDislike?.();
+    };
 
     return (
         <div className="bg-white rounded-3xl shadow-md p-5 border mb-6 relative">
@@ -110,22 +131,16 @@ export default function PostContent({ post, showFullContent = true, isOwner, onE
                 )}
             </div>
 
-            <Hashtags tags={post.tags?.map(tag => tag.name)} />
+            <Hashtags tags={post.tags?.map((tag) => tag.name)} />
 
-            <div className="flex space-x-6 text-sm mt-4">
-                <span className="flex items-center gap-1 text-blue-600">
-                    <AiFillLike size={20} />
-                    {post.likes ?? 0}
-                </span>
-                <span className="flex items-center gap-1 text-red-600">
-                    <AiFillDislike size={20} />
-                    {post.dislikes ?? 0}
-                </span>
-                <span className="flex items-center gap-1 text-green-600">
-                    <BiCommentDetail size={20} />
-                    {commentCount ?? post.comment_count ?? 0}
-                </span>
-            </div>
+            <PostActions
+                likes={postLikes ?? post.likes ?? 0}
+                dislikes={postDislikes ?? post.dislikes ?? 0}
+                comments={commentCount ?? post.comment_count ?? 0}
+                onLike={handleOnLike}
+                onDislike={handleOnDislike}
+                userVote={userVote}
+            />
         </div>
     );
 }

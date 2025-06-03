@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
-import PostContent from '../../components/forum/PostContent';
+import PostContainer from '../../components/forum/PostContainer';
 import PostForm from '../../components/forum/PostForm';
 import CommentSection from '../../components/forum/CommentSection';
 
@@ -131,7 +131,7 @@ export default function PostDetail() {
                                     padding: '10px 0',
                                     borderRadius: 5,
                                     border: 'none',
-                                    backgroundColor: '#ef4444', // đỏ
+                                    backgroundColor: '#ef4444',
                                     color: 'white',
                                     fontWeight: 'bold',
                                     cursor: 'pointer',
@@ -199,7 +199,7 @@ export default function PostDetail() {
             </div>
 
             <div className="max-w-3xl mx-auto -mt-10">
-                <PostContent
+                <PostContainer
                     post={post}
                     commentCount={commentCount}
                     showFullContent={true}
@@ -222,7 +222,7 @@ export default function PostDetail() {
                     </div>
                 )}
 
-                <CommentSection postId={post.id} onCommentCountChange={setCommentCount}/>
+                <CommentSection postId={post.id} onCommentCountChange={setCommentCount} />
             </div>
         </div>
     );
