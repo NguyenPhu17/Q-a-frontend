@@ -14,6 +14,7 @@ import Group from '../pages/Forum/Group';
 import MessagePage from '../pages/Message/MessagePage';
 import ForgotPassword from '../pages/Form/ForgotPassword';
 import ResetPassword from '../pages/Admin/ResetPassword';
+import VideoCallRoom from '../pages/Message/VideoCallRoom';
 
 const AppRouter = () => (
   <Router>
@@ -30,6 +31,7 @@ const AppRouter = () => (
         <Route path="group" element={<Group />} />
       </Route>
       <Route path="/message" element={<MessagePage />} />
+      <Route path="/video-call/:roomId" element={<VideoCallRoom />} />
       <Route
         path="/admin"
         element={

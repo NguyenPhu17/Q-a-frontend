@@ -23,6 +23,7 @@
     "framer-motion": "^12.12.2",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.511.0",
+    "peerjs": "^1.5.4",
     "react": "^19.1.0",
     "react-confirm-alert": "^3.0.6",
     "react-dom": "^19.1.0",
