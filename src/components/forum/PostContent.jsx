@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { AiFillCheckCircle } from 'react-icons/ai';
 import Hashtags from "./Hashtags";
 import PostActions from "./PostActions";
 import ReactMarkdown from "react-markdown";
@@ -89,8 +90,14 @@ export default function PostContent({
                     className="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-300"
                 />
                 <div className="leading-tight">
-                    <p className="font-semibold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer mb-0.5">
+                    <p
+                        className={`font-semibold transition-colors cursor-pointer mb-0.5 flex items-center ${post.User?.role === 'lecturer' ? 'text-blue-600' : 'text-gray-900'
+                            }`}
+                    >
                         {post.User?.name}
+                        {post.User?.role === 'lecturer' && (
+                            <AiFillCheckCircle className="ml-1 text-blue-600" size={16} />
+                        )}
                     </p>
                     <p className="text-xs text-gray-500">
                         {getRelativeTime(post.created_at)}

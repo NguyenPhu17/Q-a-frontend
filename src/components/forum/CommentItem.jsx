@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { AiFillCheckCircle } from 'react-icons/ai';
 import CommentForm from './CommentForm';
 
 export default function CommentItem({ comment, onEdit, onDelete, isOwner, onReply, replyingTo, onSubmitReply }) {
@@ -60,17 +61,35 @@ export default function CommentItem({ comment, onEdit, onDelete, isOwner, onRepl
             />
             <div className="flex-1">
                 <div className="bg-gray-100 px-4 py-2 rounded-2xl block w-full max-w-[800px] break-words">
-                    <div className="text-sm font-semibold text-gray-800 flex items-center space-x-1">
-                        <span>{user.name || 'Ẩn danh'}</span>
+                    <p
+                        className={`text-sm font-semibold transition-colors cursor-pointer mb-0.5 flex items-center ${user.role === 'lecturer' ? 'text-blue-600' : 'text-gray-800'
+                            }`}
+                    >
+                        {user.name || 'Ẩn danh'}
+                        {user.role === 'lecturer' && (
+                            <AiFillCheckCircle className="ml-1 text-blue-600" size={16} />
+                        )}
+
                         {comment.isAuthor && (
                             <span className="flex items-center text-blue-500 text-xs font-medium ml-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6-6 3.536 3.536-6 6H9v-3.536z" />
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4 mr-0.5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15.232 5.232l3.536 3.536M9 13l6-6 3.536 3.536-6 6H9v-3.536z"
+                                    />
                                 </svg>
                                 Tác giả
                             </span>
                         )}
-                    </div>
+                    </p>
                     <div className="text-sm text-gray-800 whitespace-pre-line break-all">
                         {isEditing ? (
                             <textarea

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import PostContent from "./PostContent";
 import { toast } from "react-toastify";
 
-export default function PostContainer({ post, onEdit, onDelete, showFullContent, commentCount }) {
+export default function PostContainer({ post, onEdit, onDelete, showFullContent, commentCount, isOwner}) {
     const [likes, setLikes] = useState(post.likes ?? 0);
     const [dislikes, setDislikes] = useState(post.dislikes ?? 0);
     const [loading, setLoading] = useState(false);
@@ -100,7 +100,7 @@ export default function PostContainer({ post, onEdit, onDelete, showFullContent,
     return (
         <PostContent
             post={post}
-            isOwner={post.is_owner}
+            isOwner={isOwner}
             onEdit={onEdit}
             onDelete={onDelete}
             commentCount={commentCount}

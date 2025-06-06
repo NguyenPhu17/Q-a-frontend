@@ -55,7 +55,7 @@ export default function PostPage() {
       console.log('Create post response:', result);
 
       if (res.ok) {
-        setPosts(prevPosts => [result.data, ...prevPosts]);
+        await fetchPosts();
         setShowCreateForm(false);
       } else {
         alert('Tạo bài viết thất bại: ' + (result.message || 'Lỗi không xác định'));
